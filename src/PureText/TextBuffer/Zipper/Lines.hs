@@ -5,8 +5,8 @@ module PureText.TextBuffer.Zipper.Lines
 import PureText.TextBuffer.Zipper.Base
 import PureText.TextBuffer.Zipper.Slice
 import qualified PureText.TextBuffer.Zipper.Slice.Buffer as BS
-import PureText.TextBuffer.Zipper.Text
-import PureText.TextBuffer.Zipper.LineSlices (LineSlicesZipper, hyperZipper, prepForHyperline)
+import PureText.Zipper.Text
+import PureText.Zipper.LineSlices
 import PureText.TextBuffer.Lines
 import PureText.TextBuffer.Lines.Core
 import PureText.Util
@@ -74,11 +74,11 @@ instance (Monoid a) => Zippy (LinesZipper a) where
         , below = L post (markDirty h2o) :<<|| below
         , h2o = H2O (lineInfo, Dirty) True
         }
-        where (TZ pre post) = here
+        where (pre, post) = splitTextZipper here
     push Backwards (Lb lineInfo) LsZ{above, here, below, h2o} = LsZ
         { above = above :||>> L pre (H2O (lineInfo, Dirty) True)
         , here = toZipper Forwards post
         , below
         , h2o = markDirty h2o
         }
-        where TZ{pre, post} = here
+        where (pre, post) = splitTextZipper here

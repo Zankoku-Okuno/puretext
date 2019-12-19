@@ -3,12 +3,10 @@ module PureText.TextBuffer.EditBuffer where
 
 import PureText.TextBuffer.Zipper.Base
 import PureText.TextBuffer.Zipper.Slice
-import PureText.TextBuffer.Zipper.LineSlices (LineSlicesZipper, hyperZipper, prepForHyperline)
-import PureText.TextBuffer.Zipper.HyperLine
+import PureText.Zipper.LineSlices
+import PureText.Zipper.HyperLine
 import qualified PureText.TextBuffer.Zipper.Slice.Buffer as B
-import qualified PureText.TextBuffer.Zipper.Text as Z
-import qualified PureText.TextBuffer.Zipper.LineSlices as Z
-import qualified PureText.TextBuffer.Zipper.HyperLine as Z
+import PureText.Zipper.Text
 import PureText.TextBuffer.Lines
 import PureText.Util
 
@@ -120,61 +118,31 @@ instance (Monoid a) => Zippy (EditZipper a) where
         (_, Neither) -> error "postcondition violation: failed to exit HyperLine"
 
     push dir (C c) z@LineZ{here} = z{here = push dir c here}
-    -- TODO push a linebreak into a LineZ
     push Forwards (Lb lineInfo) LineZ{over, here, under} = case bounds of
         -- FIXME the ColCursor should be reset (also for moveCarriage)
-        One bounds -> HyperZ
+        Nothing -> LineZ
             { over
-            , near = Z.EarlyMlZ
-                { earlyZip = zip'
-                , central = Nil
-                , late = LS{slices = EndSel post :<| after, h2o = markDirty h2o}
-                , bounds
-                }
-            , under
-            }
-        Neither -> LineZ
-            { over
-            , here = zip'
-            , under = B.fromLineSlices LS{slices = T post :<| after, h2o = markDirty h2o} `B.cons` under
-            }
-        Other _ -> error "invariant violation: LineZ is lost in hyperspace"
-        where
-        Z.LZ{before, here = Z.TZ pre post, after, h2o, bounds} = here
-        zip' = Z.LZ
-            { before
             , here = toZipper Backwards pre
-            , after = Empty
-            , h2o = H2O (lineInfo, Dirty) True
-            , bounds
+            , under = B.fromLineSlices post `B.cons` under
             }
-    push Backwards (Lb lineInfo) LineZ{over, here, under} = case bounds of
-        One bounds -> HyperZ
+        Just bounds -> HyperZ
             { over
-            , near = Z.LateMlZ
-                { early = LS{slices = before :|> StartSel pre, h2o = h2o'}
-                , central = Nil
-                , lateZip = zip'
-                , bounds
-                }
+            , near = splitInlSel Forwards bounds (pre, post)
             , under
             }
-        Neither -> LineZ
-            { over = over `B.snoc` B.fromLineSlices LS{ slices = before :|> T pre, h2o = h2o' }
-            , here = zip'
-            , under
-            }
-        Other _ -> error "invariant violation: LineZ is lost in hyperspace"
-        where
-        Z.LZ{before, here = Z.TZ pre post, after, h2o, bounds} = here
-        zip' = Z.LZ
-            { before = Empty
+        where (pre, post, bounds) = splitLineSlicesZipper lineInfo here
+    push Backwards (Lb lineInfo) LineZ{over, here, under} = case bounds of
+        Nothing -> LineZ
+            { over = over `B.snoc` B.fromLineSlices pre
             , here = toZipper Forwards post
-            , after
-            , h2o = markDirty h2o
-            , bounds
+            , under
             }
-        h2o' = H2O (lineInfo, Dirty) True
+        Just bounds -> HyperZ
+            { over
+            , near = splitInlSel Backwards bounds (pre, post)
+            , under
+            }
+        where (pre, post, bounds) = splitLineSlicesZipper lineInfo here
     push dir c z@HyperZ{near} = z{near = push dir c near}
 
 

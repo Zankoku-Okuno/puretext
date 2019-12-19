@@ -1,6 +1,4 @@
-module PureText.TextBuffer.Zipper.Text where
-    -- ( TextZipper -- FIXME
-    -- ) where
+module PureText.Zipper.Core.Text where
 
 import PureText.TextBuffer.Zipper.Base
 import PureText.Util

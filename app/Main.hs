@@ -17,8 +17,8 @@ import PureText.TextBuffer.Lines
 import PureText.TextBuffer.Zipper.Base
 import qualified PureText.TextBuffer.Zipper.Slice as B
 import qualified PureText.TextBuffer.Zipper.Slice.Buffer as B
-import qualified PureText.TextBuffer.Zipper.LineSlices as B
-import qualified PureText.TextBuffer.Zipper.Text as B
+import qualified PureText.Zipper.Core.LineSlices as Z
+import qualified PureText.Zipper.Core.Text as Z
 import PureText.TextBuffer.EditBuffer
 -- import PureText.TextBuffer hiding (empty)
 -- import qualified PureText.TextBuffer as E
@@ -40,8 +40,8 @@ main = do
 process :: Event -> Frame -> IO (Maybe Frame)
 process (EvKey (KChar c) []) = plain $ \fr ->
     fr{frameLines = push Backwards (C c) (frameLines fr) }
--- process (EvKey KEnter []) = plain $ \fr ->
---     fr{frameLines = insert Backwards Linebreak (frameLines fr) }
+process (EvKey KEnter []) = plain $ \fr ->
+    fr{frameLines = push Backwards (Lb mempty) (frameLines fr) }
 -- process (EvKey KBS []) = plain $ \fr ->
 --     fr{frameLines = delete Backwards (frameLines fr) }
 -- process (EvKey KDel []) = plain $ \fr ->
@@ -154,11 +154,11 @@ sillyToImg LineZ{..} = vertCat [fromWhole over, fromLSlices here, fromWhole unde
     where
     fromWhole (B.BS Empty) = emptyImage
     fromWhole (B.BS (B.Whole _ lines :<| Empty)) = text' defAttr $ toText "\n" lines
-    fromLSlices (B.LZ{here = B.TZ t ""}) = horizCat
+    fromLSlices (Z.LZ{here = Z.TZ t ""}) = horizCat
         [ text' curLineAttr t
         , text' curColAttr " "
         ]
-    fromLSlices (B.LZ{here = B.TZ t (c :< t')}) = horizCat
+    fromLSlices (Z.LZ{here = Z.TZ t (c :< t')}) = horizCat
         [ text' curLineAttr t
         , text' curColAttr (c :< "")
         , text' curLineAttr t'

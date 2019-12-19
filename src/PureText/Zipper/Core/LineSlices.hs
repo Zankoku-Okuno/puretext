@@ -1,21 +1,19 @@
-module PureText.TextBuffer.Zipper.LineSlices where
-    -- ( LineSlicesZipper -- FIXME
-    -- , hyperZipper, prepForHyperline
-    -- ) where
+module PureText.Zipper.Core.LineSlices where
 
 import PureText.TextBuffer.Zipper.Base
 import PureText.TextBuffer.Zipper.Slice
-import qualified PureText.TextBuffer.Zipper.Slice.Buffer as B
-import PureText.TextBuffer.Zipper.Text
+import PureText.Zipper.Text
 import PureText.TextBuffer.Lines
-import PureText.Util
+import qualified PureText.TextBuffer.Zipper.Slice.Buffer as B
 
 import Control.Applicative
 
 import Data.Sequence (Seq(..))
 import qualified Data.Sequence as Seq
+import PureText.Util
 
-{- INVARIANT: if bounds is Other Forwards, before is Empty; if boudns is Other Backwards, after is Empty -}
+
+{- INVARIANT: if bounds is Other Forwards, before is Empty; if bounds is Other Backwards, after is Empty -}
 data LineSlicesZipper a = LZ
     { before :: Seq LineSlice
     , here :: TextZipper
@@ -30,6 +28,7 @@ instance Monoid a => Zippy (LineSlicesZipper a) where
     type Blocked (LineSlicesZipper a) = Neither GoingHyperLine
     type Elem (LineSlicesZipper a) = Char
 
+    -- this implementation avoids entering any multi-line selection
     toZipper dir LS{slices, h2o} = LZ{ before, here, after, h2o, bounds = Neither }
         where
         (before, here, after) = fromSeq dir slices
@@ -43,10 +42,8 @@ instance Monoid a => Zippy (LineSlicesZipper a) where
         fromSeq dir xs = fromSeq' dir xs
         -- then deal with opening/simulating T constructors
         fromSeq' Forwards (T here :<| after) = (Empty, toZipper Forwards here, after)
-        fromSeq' Forwards (EndSel here :<| after) = (Empty, toZipper Forwards here, after)
         fromSeq' Forwards _ = (Empty, toZipper dir "", slices)
         fromSeq' Backwards (before :|> T here) = (before, toZipper dir here, Empty)
-        fromSeq' Backwards (before :|> StartSel here) = (before, toZipper dir here, Empty)
         fromSeq' Backwards _ = (slices, toZipper dir "", Empty)
 
     fromZipper LZ{before, here, after, h2o, bounds} = case hereSlice of
@@ -103,6 +100,7 @@ instance Monoid a => Zippy (LineSlicesZipper a) where
 
 ------------ Entering HyperLine Zippers ------------
 
+-- this function is for entering a HyperLine
 hyperZipper :: Direction -> LineSlices (a, Dirt) -> LineSlicesZipper a
 hyperZipper Forwards LS{slices = before :|> StartSel here, h2o} = LZ
     { before

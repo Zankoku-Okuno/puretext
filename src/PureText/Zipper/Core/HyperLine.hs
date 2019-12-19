@@ -1,14 +1,11 @@
-module PureText.TextBuffer.Zipper.HyperLine where
-    -- ( HyperLineZipper
-    -- , HyperLine
-    -- ) where
+module PureText.Zipper.Core.HyperLine where
+
 
 import PureText.TextBuffer.Zipper.Base
 import PureText.TextBuffer.Zipper.Slice
 import qualified PureText.TextBuffer.Zipper.Slice.Buffer as BS
-import PureText.TextBuffer.Zipper.Text
-import PureText.TextBuffer.Zipper.LineSlices (LineSlicesZipper, hyperZipper, prepForHyperline)
-import qualified PureText.TextBuffer.Zipper.LineSlices as LZ
+import PureText.Zipper.Text
+import PureText.Zipper.LineSlices
 import PureText.TextBuffer.Zipper.Lines
 import PureText.TextBuffer.Lines
 import PureText.TextBuffer.Lines.Core
@@ -130,47 +127,32 @@ instance (Monoid a) => Zippy (HyperLineZipper a) where
         EarlyMlZ{earlyZip} -> z{earlyZip = push dir c earlyZip}
         CentralMlZ{centralZip} -> z{centralZip = push dir (C c) centralZip}
         LateMlZ{lateZip} -> z{lateZip = push dir c lateZip}
-    push Forwards (Lb lineInfo) EarlyMlZ{earlyZip, central, late, bounds} = EarlyMlZ
-        { earlyZip = LZ.LZ
-            { before
-            , here = toZipper Backwards pre
-            , after = Empty
-            , h2o = H2O (lineInfo, Dirty) True
-            , bounds = Other Backwards
+    push dir (Lb lineInfo) EarlyMlZ{earlyZip, central, late, bounds} = case dir of
+        Forwards -> EarlyMlZ
+            { earlyZip = pre
+            , central = post :<<|| central
+            , late
+            , bounds
             }
-        , central = L post (markDirty h2o) :<<|| central
-        , late
-        , bounds
-        }
-        where LZ.LZ{before, here = TZ pre post, h2o} = earlyZip
-    push Backwards (Lb lineInfo) EarlyMlZ{earlyZip, central, late, bounds} = CentralMlZ
-        { early = LS (before :|> StartSel pre) (H2O (lineInfo, Dirty) True)
-        , centralZip = toZipper Forwards $ L post (markDirty h2o) :<<|| central
-        , late
-        , bounds
-        }
-        where LZ.LZ{before, here = TZ pre post, after, h2o} = earlyZip
+        Backwards -> CentralMlZ
+            { early = fromZipper pre
+            , centralZip = toZipper Forwards $ post :<<|| central
+            , late
+            , bounds
+            }
+        where (pre, post) = splitEarlyZipper lineInfo earlyZip
     push dir lb@(Lb _) z@CentralMlZ{centralZip} = z{centralZip = push dir lb centralZip}
-    push Forwards (Lb lineInfo) LateMlZ{early, central, lateZip, bounds} = CentralMlZ
-        { early
-        , centralZip = toZipper Backwards $ central :||>> L pre (H2O (lineInfo, Dirty) True)
-        , late = LS (EndSel post :<| after) (markDirty h2o)
-        , bounds
-        }
-        where LZ.LZ{before, here = TZ pre post, after, h2o} = lateZip
-    push Backwards (Lb lineInfo) LateMlZ{early, central, lateZip, bounds} = LateMlZ
-        { early
-        , central = central :||>> L pre (H2O (lineInfo, Dirty) True)
-        , lateZip = LZ.LZ
-            { before = Empty
-            , here = toZipper Forwards post
-            , after
-            , h2o = markDirty h2o
-            , bounds = Other Forwards
+    push dir (Lb lineInfo) LateMlZ{early, central, lateZip, bounds} = case dir of
+        Forwards -> CentralMlZ
+            { early
+            , centralZip = toZipper Backwards $ central :||>> pre
+            , late = fromZipper post
+            , bounds
             }
-        , bounds
-        }
-        where LZ.LZ{here = TZ pre post, after, h2o} = lateZip
-
-
-
+        Backwards -> LateMlZ
+            { early
+            , central = central :||>> pre
+            , lateZip = post
+            , bounds
+            }
+        where (pre, post) = splitLateZipper lineInfo lateZip
