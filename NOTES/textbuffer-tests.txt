@@ -1,0 +1,18 @@
+quickcheck requirements for Lines
+
+uncons Nil === Nothing
+uncons (cons x xs) === Just (x, xs)
+unsnoc Nil === Nothing
+unsnoc (snoc x xs) === Just (xs, x)
+
+endsWithLinebreak (xs `snoc` Linebreak) === True
+
+
+
+when str non-empty and not a substring in xs:
+    splitAtChar i xs === both (fromText str) $ T.splitAt i (toText str xs)
+uncurry (<>) (splitAtChar i xs) === xs
+uncurry (<>) (splitEndChar i xs) === xs
+
+
+both f (x, y) = (f x, f y)

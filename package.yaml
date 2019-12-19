@@ -1,0 +1,78 @@
+name:                puretext
+version:             0.1.0.0
+github:              "Zankoku-Okuno/puretext"
+license:             BSD3
+author:              "Okuno Zankoku"
+maintainer:          "zankoku.okuno@gmail.com"
+copyright:           "2019 Okuno Zankoku"
+
+extra-source-files:
+- README.md
+- ChangeLog.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/Zankoku-Okuno/puretext#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+- ghc-prim
+- containers >= 0.6
+- text >= 1.2 && < 2
+
+default-extensions:
+- OverloadedStrings
+- BangPatterns
+- TupleSections
+- LambdaCase
+- NamedFieldPuns
+- RecordWildCards
+- DuplicateRecordFields
+- PatternSynonyms
+- ViewPatterns
+- InstanceSigs
+- ScopedTypeVariables
+- DeriveFunctor
+- GeneralizedNewtypeDeriving
+- TypeSynonymInstances
+- FlexibleInstances
+- FlexibleContexts
+- MultiParamTypeClasses
+- FunctionalDependencies
+# - AllowAmbiguousTypes
+# - ExistentialQuantification
+- GADTs
+- TypeFamilies
+- DataKinds
+
+library:
+  source-dirs: src
+
+executables:
+  puretext-exe:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - puretext
+    - vty >= 5 && < 6
+    - terminal-size
+
+tests:
+  puretext-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - puretext

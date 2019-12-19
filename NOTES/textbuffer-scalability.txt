@@ -1,0 +1,52 @@
+as files get large, they may have many lines or many columns
+
+for large numbers lines, a fingertree with a measurement related to number of newlines makes sense
+
+for large numbers of characters, the Text type probably makes sense
+
+considering most files to be edited will have large numbers of lines, I'm okay with optimizing for that case
+however, I'd like to see if a composite of the two measures might be made
+
+
+=====================
+
+ground truth: text buffer has lines and selections
+    pointers into the buffer are essential and serve in place of zippers
+    lines could be actualy text lines, or pointers to an earlier history; or let laziness handle it?
+buffer history is a zipper of text buffers
+
+render buffer: like text buffer, but
+    has gutter info
+    in each line
+        replaces chars/sequences (whitespace, non-printing characters, &c)
+        applies spans
+
+--- here things become frontend ---
+
+window buffer: render buffer and a scroll-to location
+    convertable to an Vty Image
+
+======================
+
+window size
+a flow module which takes the window size and a "dom" tree
+the dom tree has widgets as leaves
+a reflow tells each widget what size it has
+a widget then can get resize events and handle them
+widgets produce images
+reflowing works back up the dom tree, stitching images together
+
+it also needs to track focus and collision boxes so it can dispatch events to widgets
+
+
+===============================
+
+undo history
+    just a zipper of patches
+    to generate a patch, group selections by whether they per-line "collide"
+        marl those (consecutive) lines removed,
+        make the alterations on the selections,
+        stitch back together with unchanged line segments,
+        mark the resulting (consecutive) lines added
+
+

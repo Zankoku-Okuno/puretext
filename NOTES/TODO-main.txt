@@ -1,0 +1,36 @@
+{-
+
+  * render a text buffer
+  * work with multiple selections in text buffer
+  * keybindings (including a human-redable serialization format)
+  * fuzzy complete from database (with cache of previous selections)
+  * infinite history
+  * apply multiple layers of formatting to text
+  * plugin language and engine
+  * regex engine
+  * hex editor
+  * load/save a file in chunks rather than whole
+  * look at git repo to see which files have conflicts
+    when they do, render the two versions side-by-side inline
+
+
+  * advanced techniques: a selections stack (would require re-engineering the EditBuffer zippers and Slices module, b/c Marks could appear anywhere)
+-}
+
+{-
+    gtk2hs tutorials are old, and the documentation is not well-linked
+    perhaps a TUI would be easier: reflex-vty?
+
+-}
+
+
+-------
+
+
+
+
+tokenization is in terms of regexes
+    but then each match might be in need of further tokenization (give the language for that)
+    also, the next regex can be different from the starting regex
+    a language is just a set of tokenizers and a start tokenizer
+and of course, let's use the fully-functional derivative-based regex-with-backreference library I have

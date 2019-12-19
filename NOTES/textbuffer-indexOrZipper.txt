@@ -1,0 +1,105 @@
+newtype TextLines = TL (Seq Line)
+
+data Line = L
+    { inline :: Text
+    , linebreak :: Maybe Text
+    -- len is in here so that it can have one thunk rather than many
+    , len :: Int -- INVARIANT: len l === T.length (inline l)
+    }
+
+
+the hard thing about indexes is when per-selection edits happen outside a selection
+the thing I might do is only allow edits to occur at a location
+    find the location you need to be in
+    then delete, insert as needed
+    if you're near a selection... then we can work it out probly
+
+
+
+====================
+
+
+or, maybe zippers aren't so hard
+
+when editing, you can
+    edit within a selection (Selection -> Selection)
+    have an edit zipper which bifurcates the entire buffer
+
+the first edit style is easy
+
+for the second
+    obtain the initial zipper by
+        start/end of selection
+        cursor of selection (with orientation)
+        at an absolute coordinate
+    move the cursor
+        into/outof a selection
+        forward backward by characters
+        up/down
+            can be simulated by repeating left/right until column matches?
+    use the cursor to
+        insert/delete ahead/behind
+        extend/delete selection ahead/behind
+        create a selection behind/around/ahead
+
+the zipper jsut has two text buffers either side, but the focus can be
+    inside a selection
+    inside a non-selection
+    at the border between selections&/non-selections
+
+when multiple places are to be edited, we can plop down a bunch of pre-edit marks
+    these are just transparent bits that can go in-between (or inside) any other parts of the unselect/select list
+    the question is region deletion: should it delete edit marks?
+alternately, mark selections as having generated/not an edit point
+    still have to worry about selection merging, but that's fine
+
+
+
+something to think about is that an edit might delete all the cursors
+which means we'll have to invent a cursor
+how should that be done?
+    zero,zero?
+    having to do with the primary cursor?
+        like, primary becomes zombie if deleted, and is only actually deleted when other cursors are known to survive
+        but what if there is no primary?
+    last edit point?
+
+
+
+==============================
+
+FIXME: I think a Line should carry whether it has a newline
+perhaps, make an (exported) Line just a newtype around Lines
+
+
+
+so, if I go by zippers, then what about spans?
+they're by index into the buffer
+
+
+I'm thinking the edit buffer should be a sequence of
+    * Lines, and
+    * marks which are
+        open/close selection (with cursor on one of each pair of open/close)
+        primary selection
+        queued edit
+        start/end edited section
+you start with a TextBuffer (Lines and Selections)
+when an edit (or multi-edit) needs to be done, convert to an EditBuffer
+when the (multi-)edit is done, convert back to TextBuffer, along with a diff
+update the spans with the diff
+
+for these open/close marks, it'll be annoying to search all the time to see if I'm in one
+obvs I can make a function to search, but...
+my zipper might be (SelectBuffer, MarkStack, SelectBuffer)
+I guess the MarkStack isn't exactly a stack, though: the edit and selection might overlap, but not fully one around the other
+
+the MarkStack might just have
+    whether we're in an edited part
+        starts false, becomes true when edited, changes appropriately for crossing edit marks
+        also, but the edit open/close mark at line boundaries only
+        I'll likely want something to traverse back/forward to plop it down
+    the limits of the selection we're in
+        the idea is to put a zipper (within the selection) inside a zipper (within the whole buffer)
+            or maybe this is a finger? not a zipper?
+        find the edges lazily

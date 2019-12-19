@@ -1,0 +1,95 @@
+ugh, so tracking edits is harder than I thought
+
+here's what I'm thinking: do the edits in a Writer monad
+    the zipper knowss what line it's in
+    when an edit happens, mark iy
+        either a normal character(s) edit in a line
+        or the deletion/insertion of a newline
+    the Writer (somehow) gathers up this info, translating it into a list of inserted/deleted/modified lines in the original's coordinate system
+    that +/*/- set can drive translations from the old coordinate system to the new
+
+when I say somehow, we're actually keeping just the +/*/-
+    use it to translate incoming edits
+    so as long as we can merge two +/*/- from the same coordinate system, we're fine
+
+
+
+data DiffSummary = D
+    { added :: IntMap Int -- ints are the lines after the added line
+    , altered :: IntMap Alteration
+    }
+data Alteration = Deleted | Modified
+
+
+--------------------------------
+
+
+
+each line stores whether it is dirty (new lines are also dirty)
+each plugin may store state and spans for each line
+    the question is: what about multi-line spans?
+    probably, a line which continues a span should be marked as a continuation span
+    that is, each line has a list of start span points, continue spans
+        data SpanLineInfo = Start ColNo | Continue LineCountStartedAgo | Stop ColNo
+
+when a line is dirty (and the previous wasn't) and a plugin has info stored at that line
+restart the plugin's analysis from however far back that info came from
+the plugin can stop when it has reached a non-dirty line which has the same stored state as the analysis' current state
+
+
+it turns out there are lots of analysis:
+        e.g. words the file has to drive fuzzy complete
+        will need to know about deleted lines
+    line-by-line restartable from state
+    within a single line, independent of others
+    built up with a commutative group from independent line analyses
+    a whole file at a time
+
+these can create various pieces of information:
+    spans, which start and end at a line/col
+        these are stored per line, as start and continuation records, each possibly with stop information
+        I think... the spans from a single analysis can't overlap? no: multiple compiler errors might overlap
+        e.g. lexical analysis, compiler errors
+    gutters, which start at a line and stop some number of lines down
+        again, encode these with start/continuation records on each line, but no need for column and stop information
+        e.g. which lines are modified since last save?, collapsible sections, tabstops
+    databases, which describe a file as a whole, without any location information
+        e.g. and index of the words in the file
+
+
+
+I should probably not hardcode linelengths per-line
+instead, have a plugin that computes it if necessary
+more likely, I'l want to know Vty's text on the console length
+
+
+=========
+
+
+data EditBuffer = E
+    { before :: BufferSlice
+    , atLine :: LineZipper
+    , after :: BufferSlice
+    }
+
+data BufferSlice
+    = Boring Lines
+    | Dirty Lines -- is this actually useful?
+    | Cutup
+        { lineInfo :: Vault
+        , slices :: Seq LineSlice
+        , hasTrailingNewline :: Bool
+        , dirty :: Bool
+        }
+
+data LineZipper
+    { lineInfo :: Vault
+    , before :: Seq LineSlice
+    , after :: Seq LineSlice
+    , hasTrailingNewline :: Bool
+    , dirty :: Bool
+    }
+data LineSlice
+    = T Text
+    | Selection OpenClose
+    | QueuedEdit
