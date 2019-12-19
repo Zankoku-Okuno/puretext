@@ -1,10 +1,10 @@
 module PureText.Zipper.Core.LineSlices where
 
-import PureText.TextBuffer.Zipper.Base
-import PureText.TextBuffer.Zipper.Slice
+import PureText.Zipper.Base
+import PureText.Slice.Core
 import PureText.Zipper.Text
-import PureText.TextBuffer.Lines
-import qualified PureText.TextBuffer.Zipper.Slice.Buffer as B
+import PureText.Lines
+import qualified PureText.Slice.Buffer as B
 
 import Control.Applicative
 

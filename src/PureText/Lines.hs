@@ -1,4 +1,4 @@
-module PureText.TextBuffer.Lines
+module PureText.Lines
     ( Lines(Nil, (:<<||), (:||>>))
     , LinebreakSequence, fromText, toText
     , Line, LineHydration(..)
@@ -7,7 +7,7 @@ module PureText.TextBuffer.Lines
     , hasTrailingLinebreak
     ) where
 
-import PureText.TextBuffer.Lines.Core
+import PureText.Lines.Core
 import PureText.Util
 
 import Data.Foldable

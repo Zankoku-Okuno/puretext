@@ -1,7 +1,7 @@
-module PureText.TextBuffer.Zipper.Slice where
+module PureText.Slice.Core where
 
-import PureText.TextBuffer.Lines
-import PureText.TextBuffer.Lines.Core
+import PureText.Lines
+import PureText.Lines.Core
 
 import Control.Arrow
 
@@ -110,7 +110,7 @@ type SelectionInfo = (SelectionSide, SelectionSide) -- FIXME one has to be Ancho
 data SelectionSide = Anchor | Cursor ColIx
 
 
--- FIXME move this to the TextBuffer module (the version of this without zippers)
+-- FIXME move this elsewhere
 data ColIx
     = DynCur
     | FixCur Int

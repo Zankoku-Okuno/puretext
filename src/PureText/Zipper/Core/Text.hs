@@ -1,6 +1,6 @@
 module PureText.Zipper.Core.Text where
 
-import PureText.TextBuffer.Zipper.Base
+import PureText.Zipper.Base
 import PureText.Util
 
 import Data.Text (Text)

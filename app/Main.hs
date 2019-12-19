@@ -13,17 +13,14 @@ import Graphics.Vty
 import qualified System.Console.Terminal.Size as TermSize
 import PureText.Util
 
-import PureText.TextBuffer.Lines
-import PureText.TextBuffer.Zipper.Base
-import qualified PureText.TextBuffer.Zipper.Slice as B
-import qualified PureText.TextBuffer.Zipper.Slice.Buffer as B
+import PureText.Lines
+import PureText.Zipper.Base
+import PureText.Zipper.Edit
 import qualified PureText.Zipper.Core.LineSlices as Z
 import qualified PureText.Zipper.Core.Text as Z
-import PureText.TextBuffer.EditBuffer
--- import PureText.TextBuffer hiding (empty)
--- import qualified PureText.TextBuffer as E
--- import PureText.TextBuffer.Lines_Old (CharBreak(..))
--- import qualified PureText.TextBuffer.Lines_Old as L
+import qualified PureText.Zipper.Core.Edit as Z
+import qualified PureText.Slice.Core as B
+import qualified PureText.Slice.Buffer as B
 
 
 main :: IO ()
@@ -57,12 +54,10 @@ process (EvMouseDown _ _ BScrollDown []) = plain $ scrollFrame (1, 0)
 process (EvMouseDown _ _ BScrollUp [MShift]) = plain $ scrollFrame (0, -1)
 process (EvMouseDown _ _ BScrollDown [MShift]) = plain $ scrollFrame (0, 1)
 -- process ev = \x -> print ev >> pure (Just x)
-process ev = pure . Just
+process ev = plain id
 
 plain :: (Frame -> Frame) -> Frame -> IO (Maybe Frame)
 plain f = pure . Just . f
--- alterText :: (Text -> Text) -> Frame -> Frame
--- alterText f fr = flip setTextFrame fr . f . frameText $ fr
 quit = const $ pure Nothing
 
 draw :: Frame -> Picture
@@ -117,22 +112,8 @@ scrollFrame (dDown, dOver) fr@Frame{..} = fr{scroll = (down, over)}
     (down0, over0) = scroll
     (w, h) = size
 
-
-
--- snocFrame :: CharBreak -> Frame -> Frame
--- snocFrame c fr@Frame{frameLines = buf} = fr{frameLines = insert Backwards c buf }
-
--- unsnocFrame :: Frame -> Frame
--- unsnocFrame fr@Frame{frameLines = Empty} = fr
--- unsnocFrame fr@Frame{frameLines = rest :|> "" } = fr{frameLines = rest}
--- unsnocFrame fr@Frame{frameLines = rest :|> last } = fr{frameLines = rest :|> T.dropEnd 1 last}
-
-
 setTextFrame :: Text -> Frame -> Frame
 setTextFrame str fr = fr{frameLines = toZipper Forwards $ B.fromLines $ fromText "\n" str}
-
--- frameText :: Frame -> Text
--- frameText = T.unlines . toList . frameLines
 
 
 -- FIXME oof, going straight to Text is linear performance, I should get logarithmic with Lines
@@ -150,7 +131,7 @@ frameToImage Frame{..} = doCrop . doTranslate $ wholeImg
 
 
 sillyToImg :: EditZipper () -> Image
-sillyToImg LineZ{..} = vertCat [fromWhole over, fromLSlices here, fromWhole under]
+sillyToImg Z.LineZ{..} = vertCat [fromWhole over, fromLSlices here, fromWhole under]
     where
     fromWhole (B.BS Empty) = emptyImage
     fromWhole (B.BS (B.Whole _ lines :<| Empty)) = text' defAttr $ toText "\n" lines

@@ -6,9 +6,9 @@ module PureText.Zipper.LineSlices
 
 import PureText.Zipper.Core.LineSlices
 import PureText.Zipper.Text
-import PureText.TextBuffer.Lines.Core
-import PureText.TextBuffer.Zipper.Base
-import PureText.TextBuffer.Zipper.Slice
+import PureText.Lines.Core
+import PureText.Zipper.Base
+import PureText.Slice.Core
 
 import Data.Sequence (Seq(..))
 import PureText.Util

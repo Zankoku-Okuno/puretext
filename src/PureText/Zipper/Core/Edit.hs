@@ -1,13 +1,13 @@
 -- {-# OPTIONS_GHC -fno-warn-overlapping-patterns #-}
-module PureText.TextBuffer.EditBuffer where
+module PureText.Zipper.Core.Edit where
 
-import PureText.TextBuffer.Zipper.Base
-import PureText.TextBuffer.Zipper.Slice
+import PureText.Zipper.Base
+import PureText.Slice.Core
 import PureText.Zipper.LineSlices
 import PureText.Zipper.HyperLine
-import qualified PureText.TextBuffer.Zipper.Slice.Buffer as B
+import qualified PureText.Slice.Buffer as B
 import PureText.Zipper.Text
-import PureText.TextBuffer.Lines
+import PureText.Lines
 import PureText.Util
 
 import Data.Functor

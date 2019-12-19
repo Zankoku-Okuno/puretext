@@ -1,4 +1,4 @@
-module PureText.TextBuffer.Zipper.Base where
+module PureText.Zipper.Base where
 
 
 data Direction = Forwards | Backwards

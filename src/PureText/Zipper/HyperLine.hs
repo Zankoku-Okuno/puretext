@@ -4,9 +4,10 @@ module PureText.Zipper.HyperLine
     ) where
 
 import PureText.Zipper.Core.HyperLine
-import PureText.TextBuffer.Zipper.Base
-import PureText.TextBuffer.Zipper.Slice
-import PureText.TextBuffer.Lines
+import PureText.Zipper.Base
+-- TODO eliminate as many imports of Core modules as I reasonably can
+import PureText.Slice.Core
+import PureText.Lines
 
 splitInlSel :: Monoid a => Direction -> SelectionInfo
                         -> (LineSlices (a, Dirt), LineSlices (a, Dirt)) -> HyperLineZipper a

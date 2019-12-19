@@ -1,9 +1,9 @@
 {-# OPTIONS_GHC -fno-warn-overlapping-patterns #-}
-module PureText.TextBuffer.Zipper.Slice.Buffer where
+module PureText.Slice.Buffer where
 
-import PureText.TextBuffer.Zipper.Slice
-import PureText.TextBuffer.Lines
-import PureText.TextBuffer.Lines.Core
+import PureText.Slice.Core
+import PureText.Lines
+import PureText.Lines.Core
 
 import Data.Sequence (Seq(..))
 import qualified Data.Sequence as Seq

@@ -1,14 +1,11 @@
-module PureText.TextBuffer.Zipper.Lines
-    ( LinesZipper
-    ) where
+module PureText.Zipper.Core.Lines where
 
-import PureText.TextBuffer.Zipper.Base
-import PureText.TextBuffer.Zipper.Slice
-import qualified PureText.TextBuffer.Zipper.Slice.Buffer as BS
+import PureText.Zipper.Base
+import PureText.Slice.Core
 import PureText.Zipper.Text
 import PureText.Zipper.LineSlices
-import PureText.TextBuffer.Lines
-import PureText.TextBuffer.Lines.Core
+import PureText.Lines
+import PureText.Lines.Core
 import PureText.Util
 
 import Data.Functor

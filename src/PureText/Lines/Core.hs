@@ -1,4 +1,4 @@
-module PureText.TextBuffer.Lines.Core where
+module PureText.Lines.Core where
 
 import PureText.Util
 
