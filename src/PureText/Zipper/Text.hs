@@ -12,6 +12,7 @@ Most of the algorithms are exposed through the 'Zippy' instance of 'TextZipper'.
 module PureText.Zipper.Text
     ( TextZipper
     , splitTextZipper
+    , mergeTextZipper
     ) where
 
 import PureText.Zipper.Core.Text
@@ -29,3 +30,7 @@ This function gives the left and right halves of the 'TextZipper' (in that order
 -}
 splitTextZipper :: TextZipper -> (Text, Text)
 splitTextZipper TZ{pre, post} = (pre, post)
+
+mergeTextZipper :: Direction -> TextZipper -> Text -> TextZipper
+mergeTextZipper Forwards TZ{pre, post} t' = TZ{pre, post = post <> t'}
+mergeTextZipper Backwards TZ{pre, post} t' = TZ{pre = t' <> pre, post}

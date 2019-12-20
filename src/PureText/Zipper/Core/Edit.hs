@@ -192,6 +192,26 @@ instance (Monoid a) => Zippy (EditZipper a) where
         where (pre, post, bounds) = splitLineSlicesZipper lineInfo here
     push dir c z@HyperZ{near} = z{near = push dir c near}
 
+    pop dir z@LineZ{over, here, under} = case pop dir here of
+        One (c, here) -> Just (C c, z{here})
+        Other _ -> Nothing -- WARNING I'm abusing the Other branch in LineSlicesZipper.pop to say that it hit a selection boundary, not necessarily multi-line
+        Neither -> case (dir, B.unsnoc over, B.uncons under) of
+            (Forwards, _, Just (Cutup l, under')) -> Just
+                (Lb lineInfo, LineZ
+                    { over
+                    , here = mergeLineSlicesZipper dir slices $ toZipper dir l
+                    , under = under'
+                    })
+                where LS{slices, h2o = H2O (lineInfo, _) _} = fromZipper here
+            (Backwards, Just (over', Cutup l), _) -> Just
+                (Lb lineInfo, LineZ
+                    { over = over'
+                    , here = mergeLineSlicesZipper dir slices $ toZipper dir l
+                    , under
+                    })
+                where LS{slices, h2o = H2O (lineInfo, _) _} = fromZipper here
+    -- TODO HyperZ
+
 {-| Helper function to center 'EditZipper' on a single-line buffer slice.
 The name follows the hyperspace analogy laid out in (FIXME where am I going to describe this analogy?).
 

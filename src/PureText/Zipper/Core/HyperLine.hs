@@ -23,6 +23,7 @@ import PureText.Lines
 import PureText.Lines.Core
 import PureText.Util
 
+import Data.Functor
 import Control.Applicative
 
 import Data.Sequence (Seq(..))
@@ -194,3 +195,42 @@ instance (Monoid a) => Zippy (HyperLineZipper a) where
             , bounds
             }
         where (pre, post) = splitLateZipper lineInfo lateZip
+
+    pop dir z@EarlyMlZ{earlyZip, central} = easyMode <|> hardMode
+        where
+        easyMode = (\(c, earlyZip) -> (C c, z{earlyZip})) <$> pop dir earlyZip
+        hardMode = case (dir, central) of
+            -- popping the linebreak
+            (Forwards, l :<<|| central') -> One (Lb lineInfo, z{earlyZip = earlyZip', central = central'})
+                where (lineInfo, earlyZip') = mergeEarlyZipper earlyZip l
+            -- needs to exit hyperspace
+            (Forwards, Nil) -> Other GoHyper
+            -- must have run into the start of StartSel
+            (Backwards, _) -> Neither
+    -- TODO pop central
+    pop dir z@CentralMlZ{early, centralZip, late, bounds} = easyMode <|> hardMode
+        where
+        easyMode = maybeToOne $ (\(c, centralZip) -> (c, z{centralZip})) <$> pop dir centralZip
+        hardMode = case (dir, fromZipper centralZip) of
+            (Forwards, central' :||>> l) -> One
+                ( Lb lineInfo
+                , LateMlZ{early, central = central', lateZip, bounds}
+                )
+                where (lineInfo, lateZip) = mergeLateZipper l (hyperZipper Forwards late)
+            (Backwards, l :<<|| central') -> One
+                ( Lb lineInfo
+                , EarlyMlZ{earlyZip, central = central', late, bounds}
+                )
+                where (lineInfo, earlyZip) = mergeEarlyZipper (hyperZipper Backwards early) l
+            _ -> error "invariant violation: CenterMlZ with empty center detected"
+    pop dir z@LateMlZ{central, lateZip} = easyMode <|> hardMode
+        where
+        easyMode = (\(c, lateZip) -> (C c, z{lateZip})) <$> pop dir lateZip
+        hardMode = case (dir, central) of
+            -- popping the linebreak
+            (Backwards, central' :||>> l) -> One (Lb lineInfo, z{central = central', lateZip = lateZip'})
+                where (lineInfo, lateZip') = mergeLateZipper l lateZip
+            -- needs to exit hyperspace
+            (Backwards, Nil) -> Other GoHyper
+            -- must have run into the end of EndSel
+            (Forwards, _) -> Neither

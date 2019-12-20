@@ -14,6 +14,7 @@ module PureText.Zipper.LineSlices
     ( LineSlicesZipper
     , hyperZipper, prepForHyperline
     , splitLineSlicesZipper, splitEarlyZipper, splitLateZipper
+    , mergeLineSlicesZipper, mergeEarlyZipper, mergeLateZipper
     ) where
 
 import PureText.Zipper.Core.LineSlices
@@ -48,6 +49,10 @@ splitLineSlicesZipper lineInfo LZ{ before, here = splitTextZipper -> (pre, post)
         Neither -> (T pre, T post, Nothing)
         Other _ -> error "precondition violation: splitting a LineSlicesZipper at a hyperline boundary (use splitEarlyZipper or splitLateZipper)"
 
+mergeLineSlicesZipper :: Monoid a => Direction -> Seq LineSlice -> LineSlicesZipper a -> LineSlicesZipper a
+mergeLineSlicesZipper Forwards slices z@LZ{before, h2o} = z{before = slices <> before, h2o = markDirty h2o}
+mergeLineSlicesZipper Backwards slices z@LZ{after, h2o} = z{after = after <> slices, h2o = markDirty h2o}
+
 {- | When a linebreak is added into the first line of a 'PureText.Zipper.HyperLine.HyperLineZipper',
     we have to push part of this zipper into the center of the 'HyperLine'.
 This function splits a 'LineSlicesZipper' into its two sides,
@@ -64,13 +69,28 @@ splitEarlyZipper lineInfo LZ{ before, here = splitTextZipper -> (pre, post), aft
             ( LZ
                 { before
                 , here = toZipper Backwards pre
-                , after = Empty
+                , after
                 , h2o = H2O (lineInfo, Dirty) True
                 , bounds
                 }
             , L post (markDirty h2o)
             )
-        _ -> error "precondition violation: passed non-earlyZip to splitEarlyZipper"
+        _ -> error "precondition violation: passed non-earlyZip"
+
+mergeEarlyZipper :: Monoid a => LineSlicesZipper a -> Line (a, Dirt) -> (a, LineSlicesZipper a)
+mergeEarlyZipper LZ{before, here, after, h2o = H2O (lineInfo, _) _, bounds} (L t' h2o') =
+    case (after, bounds) of
+        (Empty, Other Backwards) ->
+            ( lineInfo
+            , LZ
+                { before
+                , here = mergeTextZipper Forwards here t'
+                , after
+                , h2o = markDirty h2o'
+                , bounds
+                }
+            )
+        _ -> error "precondition violation: passed non-earlyZip"
 
 {- | When a linebreak is added into the last line of a 'PureText.Zipper.HyperLine.HyperLineZipper',
     we have to push part of this zipper into the center of the 'HyperLine'.
@@ -95,3 +115,12 @@ splitLateZipper lineInfo LZ{ before, here = splitTextZipper -> (pre, post), afte
                 }
             )
         _ -> error "precondition violation: passed non-lateZip to splitLateZipper"
+
+mergeLateZipper :: Monoid a => Line (a, Dirt) -> LineSlicesZipper a -> (a, LineSlicesZipper a)
+mergeLateZipper (L t' (H2O (lineInfo, _) _)) z@LZ{before, here, h2o, bounds} =
+    case (before, bounds) of
+        (Empty, Other Backwards) ->
+            ( lineInfo
+            , z{here = mergeTextZipper Backwards here t', h2o = markDirty h2o}
+            )
+        _ -> error "precondition violation: passed non-earlyZip"

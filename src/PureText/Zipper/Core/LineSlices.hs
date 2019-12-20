@@ -137,6 +137,14 @@ instance Monoid a => Zippy (LineSlicesZipper a) where
 
     push dir c z@LZ{here, h2o} = z{here = push dir c here, h2o = markDirty h2o}
 
+    pop dir z@LZ{before, here, after, h2o} = case pop dir here of
+        Just (c, here) -> One (c, z{here, h2o = markDirty h2o})
+        Nothing -> case (dir, before, after) of
+            (Forwards, _, Empty) -> Neither
+            (Backwards, Empty, _) -> Neither
+            _ -> Other GoHyper -- WARNING I'm abusing this hyperspace thing here;
+                                -- I'm using it here only so say pop has hit a selection boundary
+
 
 ------------ Entering HyperLine Zippers ------------
 

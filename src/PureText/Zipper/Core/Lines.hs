@@ -110,3 +110,29 @@ instance (Monoid a) => Zippy (LinesZipper a) where
         , h2o = markDirty h2o
         }
         where (pre, post) = splitTextZipper here
+
+    pop dir z@LsZ{above, here, h2o, below} = easyMode <|> hardMode
+        where
+        easyMode = (\(c, here) -> (C c, z{here})) <$> pop dir here
+        hardMode = case (dir, above, below) of
+            (Forwards, _, L t' h2o' :<<|| below') -> Just
+                ( Lb lineInfo
+                , LsZ
+                    { above
+                    , here = mergeTextZipper Forwards here t'
+                    , below = below'
+                    , h2o = markDirty h2o'
+                    }
+                )
+                where (H2O (lineInfo, _) _) = h2o
+            (Forwards, _, Nil) -> Nothing
+            (Backwards, above' :||>> L t' (H2O (lineInfo, _) _), _) -> Just
+                ( Lb lineInfo
+                , LsZ
+                    { above = above'
+                    , here = mergeTextZipper Backwards here t'
+                    , below
+                    , h2o = markDirty h2o
+                    }
+                )
+            (Backwards, Nil, _) -> Nothing

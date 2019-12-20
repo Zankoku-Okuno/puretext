@@ -43,6 +43,13 @@ class Zippy z where
     -}
     push :: Direction -> Elem z -> z -> z
 
+    {- | Attempt to pop an 'Elem' off the zipper, but it might be 'Blocked'
+
+        If 'moveCarriage' would not move over an 'Elem', it is suggested to return a 'mempty' 'Blocked'.
+        If a client wishes to pop past some non-'Elem', they may move past the blockage to pop.
+    -}
+    pop :: Direction -> z -> (Blocked z) (Elem z, z)
+
 
 {- |
 Since we deal with many zippers that can push\/pop on two sides,

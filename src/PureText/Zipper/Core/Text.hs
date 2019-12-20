@@ -51,3 +51,7 @@ instance Zippy TextZipper where
 
     push Forwards c TZ{pre, post} = TZ{pre, post = c :< post}
     push Backwards c TZ{pre, post} = TZ{pre = pre :> c, post}
+
+    pop Forwards TZ{pre, post = c :< post } = Just (c, TZ{pre, post})
+    pop Backwards TZ{pre = pre :> c, post } = Just (c, TZ{pre, post})
+    pop _ _ = Nothing
