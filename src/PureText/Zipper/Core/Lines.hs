@@ -1,3 +1,18 @@
+{- |
+This is a zipper over 'Lines', centering on a 'TextZipper'.
+It is possibly the most reusable of the zippers in "PureText.Zipper",
+    since it does not impose any notion of slicing lines or making selections,
+    instead opting to be a simple two-dimensional zipper over lines of text.
+Nevertheless, it is only currently used by "PureText.Zipper.HyperLine" at the moment.
+
+This module contains the core data structures and algorithms for
+    making single-point edits within a line-oriented text buffer.
+It is not meant to be imported directly, but instead used through the
+    much smaller "PureText.Zipper.Lines" interface.
+It is provided only in case frontends use this
+    as a data structure when there is only a single selection,
+    in which case the internal data structure may need to be read to be rendered.
+-}
 module PureText.Zipper.Core.Lines where
 
 import PureText.Zipper.Base
@@ -14,12 +29,28 @@ import Control.Applicative
 import Data.Sequence (Seq(..))
 import qualified Data.Sequence as Seq
 
+{- |
+A two-dimensional zipper over line-oriented text.
 
+This zipper also keeps track of which lines are 'Dirty',
+    which indicates
+        that charaters were 'push'ed or 'pop'ed from the line,
+        that the line was split, or
+        a linebreak was removed, forming a longer line.
+When converting back to 'Lines', it is simple enough to
+    'fmap fst' to remove the 'Dirt' markings if they are unwanted.
+-}
 data LinesZipper a = LsZ
     { above :: Lines (a, Dirt)
+    -- ^ the lines above the current line
     , here :: TextZipper
+    -- ^ a zipper into the current line
     , h2o :: LineHydration (a, Dirt)
+    -- ^ whether the line has a trailing linebreak,
+    --   whether the line is 'Dirty',
+    --   and any additional user information about the line (possibly invalidated if the line is dirty)
     , below :: Lines (a, Dirt)
+    -- ^ the lines below the current line
     }
 
 instance (Monoid a) => Zippy (LinesZipper a) where

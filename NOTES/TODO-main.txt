@@ -2,7 +2,7 @@
 
   * render a text buffer
   * work with multiple selections in text buffer
-  * keybindings (including a human-redable serialization format)
+  * keybindings (including a human-readable serialization format)
   * fuzzy complete from database (with cache of previous selections)
   * infinite history
   * apply multiple layers of formatting to text

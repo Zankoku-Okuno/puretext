@@ -1,3 +1,19 @@
+{- |
+Although we might like to use only 'TextZipper' for our zippers into a line of text in a buffer,
+    during editing we also need to keep track of user selections.
+    (See "PureText.Zipper.Edit" for what editing is as far as this module is concerned.)
+This means that each line may be composed of selected and unselected stretches of text,
+    which is implemented with 'LineSlices',
+    and for which 'LineSlicesZipper' is the corresponding zipper.
+
+This module contains the core data structures and algorithms for
+    making edits within a line sliced by selections.
+It is not meant to be imported directly, but instead used through the
+    much smaller "PureText.Zipper.LineSlices" interface.
+It is provided only in case frontends use this
+    as a data structure when there is only a single selection,
+    in which case the internal data structure may need to be read to be rendered.
+-}
 module PureText.Zipper.Core.LineSlices where
 
 import PureText.Zipper.Base
@@ -12,14 +28,38 @@ import Data.Sequence (Seq(..))
 import qualified Data.Sequence as Seq
 import PureText.Util
 
+{-note that it's possible to have only a StartSel/EndSel come in,
+    in which case here is empty, and the edit cursor is on the line but outside the selection
+    (and therefore adjacent to a newline)
+-}
+{- |
+A zipper over line slices.
+Each time its carriage advances, it may advance over a character,
+    or over an inline selection boundary.
+It will not, however, move across the boundary of a multi-line selection.
+That is why @'Blocked' ('LineSlicesZipper' a)@ is @'Neither' 'GoingHyperLine'@:
+    when the end of the line is reached normally, then moving the carriage will result in a 'Neither',
+    but when it reached the edge of a multi-line selection, if will result in 'Other GoingHyperLine'.
+The naming here follows the hyperspace analogy laid out in (FIXME where am I going to describe this analogy?).
 
-{- INVARIANT: if bounds is Other Forwards, before is Empty; if bounds is Other Backwards, after is Empty -}
+If this is being used as a zipper into an edge line of a 'HyperLine',
+    then the @bounds@ field will be @'Other' 'Backwards'@ (for the first line)
+    or @'Other' 'Forwards'@ (for the last line).
+
+INVARIANT: 'StartSel' and 'EndSel' can only appear at the end\/start of @after@\/@before@, respectively.
+    This corresponds to a similar invariant on 'LineSlices'.
+
+INVARIANT: If @bounds@ is @'Other' 'Forwards'@, @before@ is 'Empty'.
+    From the other direction, if @bounds@ is @'Other' 'Backwards'@, @after@ is 'Empty'.
+-}
 data LineSlicesZipper a = LZ
     { before :: Seq LineSlice
     , here :: TextZipper
     , after :: Seq LineSlice
     , h2o :: LineHydration (a, Dirt)
     , bounds :: Neither Direction SelectionInfo -- One is inline, Other is multiline, Neither is no selection
+    -- ^ give the selection bounds if appropriate,
+    --   or in the 'Other' case, note which side of the center of a multi-line selection this edge line is on
     }
 
 
@@ -100,7 +140,14 @@ instance Monoid a => Zippy (LineSlicesZipper a) where
 
 ------------ Entering HyperLine Zippers ------------
 
--- this function is for entering a HyperLine
+{-|
+Create a zipper for use as an edge of a 'PureText.Zippers.HyperLine.HyperLineZipper'.
+That means that the @here@ field will be set to the contents of the 'StartSel' or 'EndSel'
+    (with invariants maintained appropriately).
+
+In contrast, using the 'toZipper' method will skip over a 'StartSel' of 'EndSel' at the edge of the line,
+    instead beginning from the nearest slice that is not part of a multi-line selection.
+-}
 hyperZipper :: Direction -> LineSlices (a, Dirt) -> LineSlicesZipper a
 hyperZipper Forwards LS{slices = before :|> StartSel here, h2o} = LZ
     { before
@@ -117,5 +164,15 @@ hyperZipper Backwards LS{slices =  EndSel here :<| after, h2o} = LZ
     , h2o
     }
 
+{- |
+Helper that turns a 'LineSlicesZipper' into 'BufferSlices' to ease moving into a 'HyperLine'.
+The naming here follows the hyperspace analogy laid out in (FIXME where am I going to describe this analogy?).
+
+PRECONDITION: the input 'LineSlicesZipper' is the edge of a multi-line selection
+    (i.e. starts\/ends with 'EndSel' of 'StartSel' resp.).
+
+POSTCONDITION: the Tesulting 'BufferSlices' is a single 'Cutup'
+    that ends\/starts with a 'StartSel' or 'EndSel' respectively.
+-}
 prepForHyperline :: Monoid a => LineSlicesZipper a -> BufferSlices a
 prepForHyperline = B.singleton . Cutup . fromZipper

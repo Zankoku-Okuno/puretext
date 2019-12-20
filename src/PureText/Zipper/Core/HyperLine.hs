@@ -1,3 +1,17 @@
+{- |
+When a selection crosses multiple lines,
+    it is useful to have fingers to the start\/end of the line
+    as well as to the start\/end of the selection.
+See "PureText.Zipper.Edit" for why we need a zipper inside a 'HyperLine'.
+
+This module contains the core data structures and algorithms for
+    making single-point edits within a hyperline.
+It is not meant to be imported directly, but instead used through the
+    much smaller "PureText.Zipper.HyperLine" interface.
+It is provided only in case frontends use this
+    as a data structure when there is only a single selection,
+    in which case the internal data structure may need to be read to be rendered.
+-}
 module PureText.Zipper.Core.HyperLine where
 
 import PureText.Zipper.Base
@@ -14,7 +28,33 @@ import Control.Applicative
 import Data.Sequence (Seq(..))
 import qualified Data.Sequence as Seq
 
+{- |
+A zipper over multiple lines, centered on a zipper over the current line.
 
+This data structure gives us fingers to several places:
+
+    * the start and end of the current line,
+    * the start and end of the selection,
+    * and incidentally, we also get fingers to the start of the first line touched by the selection,
+        and the end of the last line touched by the selection.
+        See the edge cases below to clarify \"touching\".
+
+There are several edge cases, which nonetheless have clear semantics:
+
+  * When the central 'Lines' are 'Nil', that indicates
+        the selection spans only two lines.
+        I.e. all selected text is contained in the 'StartSel' and 'EndSel' of the first\/last line respectively
+        (excepting the linebreak between the two, of course, which is stored outside the line characters).
+  * When the 'StartSel' in the first line is empty, that indicates
+        the selection includes only the linebreak from that first line.
+  * Similarly, when the 'EndSel' in the last line is empty, that indicates
+        the selection includes the trailing linebreak of the last central line
+        (or of the first line if there are no central lines).
+  * Conversely, when the first\/last line contains only a 'StartSel' or 'EndSel' (resp.) 'LineSlice',
+        that indicates the line has all of its characters selected
+        (excepting the trailing linebreak for the last line; see the edge case where the 'EndSel' is empty above).
+
+-}
 data HyperLineZipper a
     = EarlyMlZ
         { earlyZip :: LineSlicesZipper a
