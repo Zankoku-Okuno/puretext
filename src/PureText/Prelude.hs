@@ -1,8 +1,40 @@
-module PureText.Util where
+module PureText.Prelude
+    ( module X
+    , clamp, minBy, maxBy
+    , both
+    , Neither(..)
+    , maybeToOne, maybeToOther
+    ) where
 
-import Control.Applicative
-import Data.Text (Text)
-import qualified Data.Text as T
+import Prelude as X (Integer, Num(..), ($!))
+import Data.Int as X
+import Data.Word as X
+import Data.Bool as X
+import Data.Char as X
+import Data.String as X (String, IsString(..))
+import Data.Text as X (Text)
+import Text.Read as X hiding ((+++))
+import Text.Show as X
+import Data.Eq as X
+import Data.Ord as X
+
+import Data.Tuple as X
+
+import Data.Maybe as X
+import Data.Either as X
+import Data.Foldable as X hiding (null, length)
+import PureText.ListLike as X
+import Data.Sequence as X (Seq(..))
+
+import Data.Function as X
+import Data.Semigroup as X hiding (First(..), Last(..))
+import Data.Monoid as X
+
+import Data.Functor as X
+import Control.Arrow as X
+import Control.Applicative as X
+import Control.Monad as X hiding (mapM, sequence, sequence_)
+
 
 ------------ Basic Numerics ------------
 
@@ -19,21 +51,10 @@ maxBy f a b = case compare (f a) (f b) of
     _ -> a
 
 
------------- Text Patterns ------------
+------------ Missing Tuple ------------
 
-pattern (:<) :: Char -> Text -> Text
-pattern c :< t <- (T.uncons -> Just (c, t))
-    where (:<) = T.cons
-
-pattern (:>) :: Text -> Char -> Text
-pattern t :> c <- (T.unsnoc -> Just (t, c))
-    where (:>) = T.snoc
-
-
------------- Tuple Stuff ------------
-
-swap :: (a, b) -> (b, a)
-swap (a, b) = (b, a)
+both :: (a -> b) -> (a, a) -> (b, b)
+both f (x, y) = (f x, f y)
 
 
 ------------ Neither ------------

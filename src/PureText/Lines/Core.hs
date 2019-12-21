@@ -1,11 +1,8 @@
 module PureText.Lines.Core where
 
-import PureText.Util
+import PureText.Prelude
 
-import Data.String(IsString(..))
-import Data.Sequence (Seq(..))
 import qualified Data.Sequence as Seq
-import Data.Text (Text)
 import qualified Data.Text as T
 
 
@@ -57,8 +54,8 @@ data Lines a = Ls
     , lastLine :: Line a
     }
 
-pattern Nil :: (Monoid a) => Lines a
-pattern Nil = Ls { initLines = Empty, lastLine = NoLine }
+pattern NilLines :: (Monoid a) => Lines a
+pattern NilLines = Ls { initLines = Empty, lastLine = NoLine }
 
 pattern (:<<||) :: Monoid a => Line a -> Lines a -> Lines a
 pattern l :<<|| ls <- (unconsLines -> Just (l, ls))
@@ -76,29 +73,29 @@ instance Semigroup a => Semigroup (Lines a) where
     Ls{initLines = xs, lastLine = L t (H2O _ False)} <> ys@Ls{initLines = (t', info') :<| ls} =
         ys{initLines = xs <> ((t <> t', info') :<| ls)}
 instance Monoid a => Monoid (Lines a) where
-    mempty = Nil
+    mempty = NilLines
 
 ------------ Helper Functions ------------
 
 consLines :: Monoid a => Line a -> Lines a -> Lines a
-consLines l Nil = Ls{initLines = Empty, lastLine = l}
+consLines l NilLines = Ls{initLines = Empty, lastLine = l}
 consLines (L t (H2O info True)) xs@Ls{initLines} = xs{initLines = (t, info) :<| initLines}
 consLines (L t (H2O info False)) xs@Ls{initLines = Empty, lastLine = L t' (H2O info' tlb)} = xs{lastLine = L (t <> t') (H2O (info <> info') tlb)}
 consLines (L t (H2O info False)) xs@Ls{initLines = (t', info') :<| ls} = xs{initLines = (t <> t', info <> info') :<| ls}
 
 unconsLines :: Monoid a => Lines a -> Maybe (Line a, Lines a)
-unconsLines Nil = Nothing
-unconsLines Ls{initLines = Empty, lastLine} = Just (lastLine, Nil)
+unconsLines NilLines = Nothing
+unconsLines Ls{initLines = Empty, lastLine} = Just (lastLine, NilLines)
 unconsLines xs@Ls{initLines = (t, info) :<| ls} = Just (L t (H2O info True), xs{initLines = ls})
 
 snocLines :: Monoid a => Lines a -> Line a -> Lines a
-snocLines Nil l = Ls{initLines = Empty, lastLine = l}
+snocLines NilLines l = Ls{initLines = Empty, lastLine = l}
 snocLines xs@Ls{initLines = ls, lastLine = L t (H2O info True)} l' = xs{initLines = ls :|> (t, info), lastLine = l'}
 snocLines xs@Ls{lastLine = L t (H2O info False)} (L t' (H2O info' tlb)) = xs{lastLine = L (t <> t') (H2O (info <> info') tlb)}
 
 unsnocLines :: Monoid a => Lines a -> Maybe (Lines a, Line a)
-unsnocLines Nil = Nothing
-unsnocLines xs@Ls{initLines = Empty, lastLine} = Just (Nil, lastLine)
+unsnocLines NilLines = Nothing
+unsnocLines xs@Ls{initLines = Empty, lastLine} = Just (NilLines, lastLine)
 unsnocLines xs@Ls{initLines = ls :|> (t, info), lastLine} = Just (xs{initLines = ls, lastLine = L t (H2O info True)}, lastLine)
 
 

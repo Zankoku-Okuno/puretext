@@ -1,0 +1,39 @@
+
+
+nil :: f
+cons :: Elem f -> f -> f
+uncons :: f -> Maybe (Elem f, f)
+singleton :: Elem f -> f
+append :: f -> f -> f
+splitAt :: Int -> f -> (f, f)
+take :: Int -> f -> f
+drop :: Int -> f -> f
+map :: ListLike f' => (Elem f -> Elem f') -> f -> f'
+rigidMap :: (Elem f -> Elem f) -> f -> f
+null :: f -> Bool
+length :: f -> Int
+filter :: (Elem f -> Bool) -> f -> f
+exclude :: (Elem f -> Bool) -> f -> f
+partition :: (Elem f -> Bool) -> f -> (f, f)
+span :: (Elem f -> Bool) -> f -> (f, f)
+takeWhile :: (Elem f -> Bool) -> f -> f
+dropWhile :: (Elem f -> Bool) -> f -> f
+break :: (Elem f -> Bool) -> f -> (f, f)
+stripPrefix :: Eq (Elem f) => f -> f -> Maybe f
+isPrefixOf :: Eq (Elem f) => f -> f -> Bool
+
+
+
+
+
+snoc :: f -> Elem f -> f
+unsnoc :: f -> Maybe (f, Elem f)
+splitAtEnd :: Int -> f -> (f, f)
+takeEnd :: Int -> f -> f
+dropEnd :: Int -> f -> f
+spanEnd :: (Elem f -> Bool) -> f -> (f, f)
+takeWhileEnd :: (Elem f -> Bool) -> f -> f
+dropWhileEnd :: (Elem f -> Bool) -> f -> f
+breakEnd :: (Elem f -> Bool) -> f -> (f, f)
+stripSuffix :: Eq (Elem f) => f -> f -> Maybe f
+isSuffixOf :: Eq (Elem f) => f -> f -> Bool

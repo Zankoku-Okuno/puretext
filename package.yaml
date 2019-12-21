@@ -26,6 +26,7 @@ dependencies:
 - text >= 1.2 && < 2
 
 default-extensions:
+- NoImplicitPrelude
 - OverloadedStrings
 - BangPatterns
 - TupleSections
@@ -39,12 +40,13 @@ default-extensions:
 - ScopedTypeVariables
 - DeriveFunctor
 - GeneralizedNewtypeDeriving
+- DerivingVia
 - TypeSynonymInstances
 - FlexibleInstances
 - FlexibleContexts
+- AllowAmbiguousTypes
 - MultiParamTypeClasses
 - FunctionalDependencies
-# - AllowAmbiguousTypes
 # - ExistentialQuantification
 - GADTs
 - TypeFamilies

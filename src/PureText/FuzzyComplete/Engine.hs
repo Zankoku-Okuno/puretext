@@ -7,11 +7,10 @@ module PureText.FuzzyComplete.Engine
     , fuzzySearch, fuzzyChoice
     ) where
 
-import PureText.Util
+import PureText.Prelude
 
 import Data.Foldable
-import Data.List
-import Data.Maybe
+import qualified Data.List as List
 
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -91,13 +90,13 @@ countPrefixSkips expect input = consume expect input
 usingCache :: (FuzzyDb -> Text -> [Text]) -> FuzzyCompletions -> Text -> [Text]
 usingCache f (St db) input = case cacheResult of
     Nothing -> dbResult
-    Just last -> [last] <> delete last dbResult
+    Just last -> [last] <> List.delete last dbResult
     where
     cacheResult = Map.lookup input db >>= fst
     dbResult = f db input
 
 sortInCostGroups :: (Ord a, Foldable t) => (a -> Maybe Int) -> t a -> [a]
-sortInCostGroups f xs = map snd $ sort $ foldMap f' xs
+sortInCostGroups f xs = fmap snd $ List.sort $ foldMap f' xs
     where
     f' x = maybe [] (adapt x) $ f x
     adapt x = (:[]) . (,x)

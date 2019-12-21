@@ -1,5 +1,5 @@
 module PureText.Lines
-    ( Lines(Nil, (:<<||), (:||>>))
+    ( Lines(NilLines, (:<<||), (:||>>))
     , LinebreakSequence, fromText, toText
     , Line, LineHydration(..)
     , Charbreak(..)
@@ -7,13 +7,11 @@ module PureText.Lines
     , hasTrailingLinebreak
     ) where
 
-import PureText.Lines.Core
-import PureText.Util
+import PureText.Prelude
 
-import Data.Foldable
-import Data.Sequence (Seq(..))
+import PureText.Lines.Core
+
 import qualified Data.Sequence as Seq
-import Data.Text (Text)
 import qualified Data.Text as T
 
 
@@ -27,8 +25,8 @@ type LinebreakSequence = Text
 fromText :: Monoid a => LinebreakSequence -> Text -> Lines a
 -- TODO: hopefully this has good performance
 --      possibly I could speed it up for single-char LinebreakSequences by using fold
-fromText lb "" = Nil
-fromText lb str = loop Nil NoLine str
+fromText lb "" = NilLines
+fromText lb str = loop NilLines NoLine str
     where
     loop !acc !l "" = acc :||>> l
     loop !acc !l (T.stripPrefix lb -> Just t) = loop (acc :||>> Linebreak l) NoLine t

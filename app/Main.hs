@@ -1,5 +1,9 @@
 module Main where
 
+import System.IO
+
+main = putStrLn "TODO"
+{-
 import Data.Foldable
 import Data.List hiding (insert, delete)
 
@@ -146,3 +150,4 @@ sillyToImg Z.LineZ{..} = vertCat [fromWhole over, fromLSlices here, fromWhole un
         ]
     curLineAttr = defAttr `withStyle` bold
     curColAttr = curLineAttr `withStyle` underline
+-}
