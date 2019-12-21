@@ -15,12 +15,12 @@ newtype Buffer a = Buf { unBuf :: Seq (BufferCell a) }
 
 data BufferCell a
     = L (Line a) -- Dirt -- TODO I seem to want to track dirt at this layer
-    deriving(Functor)
     -- -- the rest of the cases are for optimization only
     -- -- | MlSel (Seq (Lineish a)) Bounds Dirt
-    -- -- -- I'm only storing dirt for the entire selection, b/c the entire selection is likely to get dirty at once
+    -- -- -- ^ I'm only storing dirt for the entire selection, b/c the entire selection is likely to get dirty at once
     -- -- | Ls (Seq (Lineish a)) Dirt
-    -- -- -- Ls is mere optimization, though when searching for selections, it could be handly
+    -- -- -- ^ Ls is mere optimization, though when searching for selections, it could be handly
+    deriving(Functor)
 
 
 instance Monoid a => Hold (Buffer a) where

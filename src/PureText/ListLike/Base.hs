@@ -171,8 +171,10 @@ slowInits
 -}
 
 class ListLike f => SeqLike f where
-    -- minimal implementation is snoc and unsnoc
+    {-# MINIMAL unsnoc #-}
+
     snoc :: f -> Elem f -> f
+    snoc xs = (append xs) . singleton
     unsnoc :: f -> Maybe (f, Elem f)
 
     splitAtEnd :: Int -> f -> (f, f)
