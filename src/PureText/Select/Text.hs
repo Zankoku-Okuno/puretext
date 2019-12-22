@@ -1,6 +1,6 @@
 {-# LANGUAGE UndecidableInstances #-}
 module PureText.Select.Text
-    ( Textish
+    ( Textish(..)
     ) where
 
 import PureText.Prelude

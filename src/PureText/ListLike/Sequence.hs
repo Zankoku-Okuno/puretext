@@ -40,6 +40,8 @@ instance ListLike (Seq a) where
     break = Seq.breakl
     -- stripPrefix :: Eq (Elem f) => f -> f -> Maybe f
     -- isPrefixOf :: Eq (Elem f) => f -> f -> Bool
+    stripInfix = seqlikeStripInfix
+    -- isInfixOf :: Eq (Elem f) => f -> f -> Bool
 
 instance SeqLike (Seq a) where
     snoc = (Seq.|>)

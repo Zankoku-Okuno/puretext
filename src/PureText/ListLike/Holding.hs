@@ -6,6 +6,7 @@ import PureText.Holding
 
 import Data.Function
 import Data.Tuple
+import Data.Maybe
 import Data.Functor
 import Control.Arrow
 
@@ -50,6 +51,11 @@ instance (ListLike (Held f), HandsFree f) => ListLike (Holding f) where
     stripPrefix (Hold needle) (Hold haystack) =
         holdWith haystack <$> stripPrefix (theHeld needle) (theHeld haystack)
     isPrefixOf (Hold needle) = isPrefixOf (theHeld needle) . theHeld . unHold
+    stripInfix (Hold needle) (Hold haystack) =
+        case stripInfix (theHeld needle) (theHeld haystack) of
+            Just (xs, ys) -> Just (holdWith haystack xs, holdWith haystack ys)
+            Nothing -> Nothing
+    isInfixOf (Hold needle) = isPrefixOf (theHeld needle) . theHeld . unHold
 
 instance (SeqLike (Held f), HandsFree f) => SeqLike (Holding f) where
     snoc xs x = holdMap (`snoc` x) xs

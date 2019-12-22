@@ -29,6 +29,8 @@ instance ListLike Text where
     break = T.break
     stripPrefix = T.stripPrefix
     isPrefixOf = T.isPrefixOf
+    stripInfix = seqlikeStripInfix
+    isInfixOf = T.isInfixOf
 
 instance SeqLike Text where
     snoc = T.snoc

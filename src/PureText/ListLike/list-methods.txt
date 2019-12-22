@@ -21,7 +21,8 @@ dropWhile :: (Elem f -> Bool) -> f -> f
 break :: (Elem f -> Bool) -> f -> (f, f)
 stripPrefix :: Eq (Elem f) => f -> f -> Maybe f
 isPrefixOf :: Eq (Elem f) => f -> f -> Bool
-
+stripInfix :: Eq (Elem f) => f -> f -> Maybe (f, f)
+isInfixOf :: Eq (Elem f) => f -> f -> Bool
 
 
 

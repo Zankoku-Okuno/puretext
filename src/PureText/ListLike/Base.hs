@@ -24,6 +24,12 @@ pattern xs :> x <- (unsnoc -> Just (xs, x))
     where (:>) = snoc
 
 
+{- FIXME a lot of the listlike methods are more like foldable
+
+perhaps we should have a module of foldable functions, and a module of list functions
+they may overlap naming and semantically, but then it'll be possible to choose which one
+    dependeing on which algorithm is right for the datatype
+-}
 class ListLike f where
 
     {-# MINIMAL nil, (cons | (singleton, append)), uncons #-}
@@ -129,11 +135,23 @@ class ListLike f where
         | x == y = isPrefixOf needle haystack
         | otherwise = False
 
+    stripInfix :: Eq (Elem f) => f -> f -> Maybe (f, f)
+    stripInfix needle Nil = Nothing
+    stripInfix needle haystack = case stripPrefix needle haystack of
+        Just post -> Just (Nil, post)
+        Nothing -> do
+            (x, xs) <- uncons haystack
+            (pre, post) <- stripInfix needle xs
+            Just (x :< pre, post)
+
+    isInfixOf :: Eq (Elem f) => f -> f -> Bool
+    isInfixOf needle Nil = False
+    isInfixOf needle haystack@(_ :< xs)
+        =  isPrefixOf needle haystack
+        || isInfixOf needle xs
 
     -- tails
 
-    -- stripInfix :: Eq e => f -> f -> Maybe (f, f) -- TODO?
-    -- isInfixOf :: Eq e => f -> f -> Bool -- TODO
 
     -- splitOn :: e -> f -> t f
     -- splitOnInfix :: f -> f -> t f
@@ -247,8 +265,15 @@ seqlikeSpan p = go Nil
         | p x = go (acc :> x) xs
         | otherwise = (acc, x :< xs)
 
+seqlikeStripInfix :: (SeqLike f, Eq (Elem f)) => f -> f -> Maybe (f, f)
+seqlikeStripInfix = go Nil
+    where
+    go !pre needle haystack@(x :< xs) = case stripPrefix needle haystack of
+        Nothing -> go (pre :> x) needle xs
+        Just post -> Just (pre, post)
+    go !pre needle Nil = Nothing
 
-    -- TODO something similar to span
+
 
 
 
