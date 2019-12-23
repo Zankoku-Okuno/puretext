@@ -41,6 +41,7 @@ default-extensions:
 - DeriveFunctor
 - GeneralizedNewtypeDeriving
 - DerivingVia
+- StandaloneDeriving
 - TypeSynonymInstances
 - FlexibleInstances
 - FlexibleContexts
@@ -48,6 +49,7 @@ default-extensions:
 - MultiParamTypeClasses
 - FunctionalDependencies
 # - ExistentialQuantification
+- ConstraintKinds
 - GADTs
 - TypeFamilies
 - DataKinds
