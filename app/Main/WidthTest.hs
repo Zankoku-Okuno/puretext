@@ -15,24 +15,25 @@ app = (pure st0, filterQuit isQuit updDebug, draw)
 
 data St = St
     { partA :: Text
-    , partB :: Maybe Text
-    , evLine :: Text
+    , partB :: Text
+    , evLine :: Maybe Event
     }
 
 st0 :: St
-st0 = (St "Hello, world! mi水zu" Nothing "")
+st0 = (St "He水ll水o, 水wo水rl水d! 水i水zu水" "" Nothing)
 
 updDebug ev st = do
     st' <- upd ev st
-    pure st'{evLine = T.pack . show $ ev}
+    pure st'{evLine = Just ev}
 
-upd ev@(EvMouseUp col 0 (Just BLeft)) st@St{partB = Nothing} = pure $
-    let (a', b') = splitAt col $ partA st
-    in st{partA = a', partB = Just b'}
-upd (EvKey KEnter _) st@(St{partA = a, partB = Just b}) = pure $ st{partA = a <> b, partB = Nothing}
+upd ev@(EvMouseUp col 0 (Just BLeft)) st@St{partB = ""} = pure $
+    -- let (a', b') = splitAt col $ partA st
+    let (a', b') = wcSplitAt col $ partA st
+    in st{partA = a', partB = b'}
+upd (EvKey KEnter _) st@(St{partA, partB}) = pure $ st{partA = partA <> partB, partB = ""}
 upd ev st = pure st
 
-draw (St a b ev) = picForImage $ vertCat $ text' defAttr <$> [a, fromMaybe "" b, ev]
+draw (St a b ev) = picForImage $ vertCat $ text' defAttr <$> [a, b, maybe "" (T.pack . show) ev]
 
 
 isQuit (EvKey (KEsc) _) = True
@@ -40,6 +41,27 @@ isQuit _ = False
 
 
 
+{- So, tabs are handled very poorly by wc width.
+    I'm thinking I'll need to put an additional layer of translation.
+    Essentially, I'll catch all the weird chars when I render text.
+    Then, when translating a point back to an index into text, I'll
+        use wcwidth on the same replacements as they are detected,
+        or fall back to wcwidth for unreplaced chars.
+-}
+
+wcToIndex :: Int -> Text -> Int
+-- wcToIndex n t = length (wcTake n t)
+wcToIndex n0 = go (0, n0)
+    where
+    go (!ix, !rem) "" = ix + rem
+    go (!ix, !rem) (c :< t)
+        | rem < wc = ix
+        | otherwise = go (ix + 1, rem - wc) t
+        where wc = safeWcwidth c
+
+
+wcSplitAt :: Int -> Text -> (Text, Text)
+wcSplitAt n t = splitAt (wcToIndex n t) t
 
 
 -- process :: Event -> Frame -> IO (Maybe Frame)
