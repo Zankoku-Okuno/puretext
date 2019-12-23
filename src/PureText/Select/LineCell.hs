@@ -1,6 +1,7 @@
 {-# LANGUAGE UndecidableInstances #-}
 {- The idea here is to have line fragments, never the entire line -}
-module PureText.Select.LineCell
+module PureText.Select.LineCell where
+{-
     ( LineCells, LineCell(..)
     ) where
 
@@ -89,3 +90,4 @@ instance SeqLike LineCells where
 
 -- instance ListLike (AsChars LineCells) Char where
 -- instance ListLike (AsCharish (LineCells a)) Charish where -- TODO
+-}

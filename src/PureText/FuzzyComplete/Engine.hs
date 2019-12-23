@@ -9,7 +9,6 @@ module PureText.FuzzyComplete.Engine
 
 import PureText.Prelude
 
-import Data.Foldable
 import qualified Data.List as List
 
 import Data.Text (Text)
@@ -45,7 +44,7 @@ newtype FuzzyCompletions = St FuzzyDb
 emptyFuzzyCompletions :: FuzzyCompletions
 emptyFuzzyCompletions = St Map.empty
 
-toFuzzyCompletions :: (Foldable t) => t Text -> FuzzyCompletions
+toFuzzyCompletions :: (Foldable t, Elem t ~ Text) => t -> FuzzyCompletions
 toFuzzyCompletions new = St $ foldl' (flip bagAdd) Map.empty new
 
 
@@ -58,7 +57,7 @@ addFuzzyCompletions new (St db) = St $ foldl' (flip bagAdd) db new
 removeFuzzyCompletions new (St db) = St $ foldl' (flip bagRemove) db new
 
 -- TODO setFuzzyCompletions, keeping old last selections
-setFuzzyCompletions :: (Foldable t) => t Text -> FuzzyCompletions -> FuzzyCompletions
+setFuzzyCompletions :: (Foldable t, Elem t ~ Text) => t -> FuzzyCompletions -> FuzzyCompletions
 setFuzzyCompletions new (St db) = St $ Map.mapWithKey copyLast fresh
     where
     St fresh = toFuzzyCompletions new
@@ -95,7 +94,7 @@ usingCache f (St db) input = case cacheResult of
     cacheResult = Map.lookup input db >>= fst
     dbResult = f db input
 
-sortInCostGroups :: (Ord a, Foldable t) => (a -> Maybe Int) -> t a -> [a]
+sortInCostGroups :: (Foldable t, Elem t ~ a, Ord a) => (a -> Maybe Int) -> t -> [a]
 sortInCostGroups f xs = fmap snd $ List.sort $ foldMap f' xs
     where
     f' x = maybe [] (adapt x) $ f x

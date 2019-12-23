@@ -1,5 +1,5 @@
 module PureText.Select.Zipper where
-
+{-
 import PureText.Prelude
 
 import PureText.Select.Base
@@ -53,3 +53,4 @@ data Zipper a
 -- TODO vertical operations (moveUp, moveDown, dragUp, dragDown)
 -- TODO large operations (by word, by line, by file, &c)
 -- TODO queries
+-}

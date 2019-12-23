@@ -1,12 +1,13 @@
 module PureText.Prelude
     ( module X
-    , clamp, minBy, maxBy
+    , minBy, maxBy, clamp
+    , softClamp
     , both
     , Neither(..)
     , maybeToOne, maybeToOther
     ) where
 
-import Prelude as X (Integer, Num(..), ($!))
+import Prelude as X (Integer, Integral(..), Num(..), ($!))
 import Data.Int as X
 import Data.Word as X
 import Data.Bool as X
@@ -22,9 +23,9 @@ import Data.Tuple as X
 
 import Data.Maybe as X
 import Data.Either as X
-import Data.Foldable as X hiding (null, length)
+-- import Data.Foldable as X hiding (null, length)
 import PureText.ListLike as X
-import Data.Sequence as X (Seq(..))
+import Data.Sequence as X (Seq)
 
 import Data.Function as X
 import Data.Semigroup as X hiding (First(..), Last(..))
@@ -38,9 +39,6 @@ import Control.Monad as X hiding (mapM, sequence, sequence_)
 
 ------------ Basic Numerics ------------
 
-clamp :: (Ord n) => (n, n) -> n -> n
-clamp (low, high) = max low . min high
-
 minBy :: (Ord b) => (a -> b) -> a -> a -> a
 minBy f a b = case compare (f a) (f b) of
     GT -> b
@@ -49,6 +47,15 @@ maxBy :: (Ord b) => (a -> b) -> a -> a -> a
 maxBy f a b = case compare (f a) (f b) of
     LT -> b
     _ -> a
+
+clamp :: (Ord n) => (n, n) -> n -> n
+clamp (low, high) = max low . min high
+
+softClamp :: (Ord n) => (n, n) -> (n -> n) -> n -> n
+softClamp bounds@(low, high) f n
+    | n < low = min (f n) high
+    | n > high = max low (f n)
+    | otherwise = clamp bounds (f n)
 
 
 ------------ Missing Tuple ------------

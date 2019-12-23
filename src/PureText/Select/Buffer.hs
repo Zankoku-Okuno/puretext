@@ -1,6 +1,6 @@
 {-# LANGUAGE UndecidableInstances #-}
 module PureText.Select.Buffer where
-
+{-
 import PureText.Prelude
 import PureText.Select.Base
 import PureText.Select.Line
@@ -60,3 +60,4 @@ instance Monoid a => ListLike (AsLines (Buffer a)) where
     cons x (AsLines xs) = AsLines $ L x `cons` xs
     uncons (AsLines Nil) = Nothing
     uncons (AsLines (L x :< xs)) = Just (x, AsLines xs)
+-}

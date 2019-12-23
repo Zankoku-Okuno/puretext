@@ -1,5 +1,6 @@
 {-# LANGUAGE UndecidableInstances #-}
-module PureText.Select.Line
+module PureText.Select.Line where
+{-
     ( Line
     ) where
 
@@ -41,3 +42,4 @@ instance Monoid a => Monoid (Line a) where
 -- instance ListLike (AsChars (Line a)) Char where
 -- instance ListLike (AsCharish (Line a)) Charish where
 
+-}

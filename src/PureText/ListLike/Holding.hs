@@ -17,6 +17,7 @@ Unfortunately, even users need to enable undecidable isntances.
 If only GHC had a way for users to tell it that an associated type family must be strictly decreasing.
 -}
 
+{-
 instance (ListLike (Held f), HandsFree f) => ListLike (Holding f) where
     type Elem (Holding f) = Elem (Held f)
     nil = Hold $ gripZero nil
@@ -77,3 +78,4 @@ instance (SeqLike (Held f), HandsFree f) => SeqLike (Holding f) where
     stripSuffix (Hold needle) (Hold haystack) =
         holdWith haystack <$> stripSuffix (theHeld needle) (theHeld haystack)
     isSuffixOf (Hold needle) = isSuffixOf (theHeld needle) . theHeld . unHold
+-}

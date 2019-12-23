@@ -4,32 +4,26 @@ module PureText.Select.Text
     ) where
 
 import PureText.Prelude
-import PureText.Holding
+import Util.DerivingVia.Newtypesque
 
 import PureText.Select.Base
 
 
 -- newtype Textish = T { unT :: Seq (Marked Text) } -- TODO
 newtype Textish = T { unT :: Text }
-    deriving(Eq, Ord, Semigroup, Monoid)
-    deriving Show via (Holding Textish)
+    deriving
+        ( Eq, Ord
+        , Semigroup, Monoid
+        , HasElems, ListCore, SeqCore, Foldable, ListLike, SeqLike
+        )
+    deriving Show via (Newtypesque Textish)
     -- deriving Read via (Holding Textish)
-    deriving IsString via (Holding Textish)
-    deriving ListLike via (Holding Textish)
-    deriving SeqLike via (Holding Textish)
+    deriving IsString via (Newtypesque Textish)
+instance IsNewtypesque Textish Text where
+    injNewtype = T
+    prjNewtype = unT
 
 
-instance Hold Textish where
-    type Held Textish = Text
-    type Hand Textish = ()
-    grip _ = T
-    ungrip = ((),) . unT
-instance HandsFree Textish where
-    gripZero = T
-
-
-
--- instance IsString Textish where fromString = T . fromString
 
 
 -- instance ListLike (AsChars Textish) where
