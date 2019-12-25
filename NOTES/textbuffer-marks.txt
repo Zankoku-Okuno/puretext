@@ -1,0 +1,88 @@
+Say we have two lines with marks on them:
+
+    line 1: _______(____
+    line 2: ___)__(___)_
+
+we then swap the order of the lines, resulting in marks like so:
+
+    line 2: ___)__(___)_
+    line 1: _______(____
+
+When we try to reconstruct the selections from these marks,
+    one of them doesn't make sense.
+The obvious algorithm is to tentatively build a selection from an openeing mark,
+    but only commit it as a selection if the matching closing mark is found.
+    Ignore close marks when not gathering a selection.
+    Commit unselected text when you find an open mark or end-of-file while gathering.
+
+
+A more worrying issue is in:
+
+    line 1: _______(AAAA
+    line 2: AAA)__(BBBBB
+    line 3: BBBBBBBB)___
+
+    line 1: _______(AAAA
+    line 3: BBBBBBBB)___
+    line 2: AAA)__(BBBBB
+
+Now, when the selections are reconstructed, the selections get their contents mixed up.
+It might therefore be useful to only reconstruct based on open/close marks that were
+    generated from the same selection.
+That'd mean attaching some fresh identifier to marks as they are saved.
+
+
+Assume I do track identifiers for each selection.
+Then what if one selection entirely consumes another?
+
+line 1: _______(A
+line 2: AAAA)____
+line 3: __(BBB)__
+
+line 1: _______(A
+line 3: __(BBB)__
+line 2: AAAA)____
+
+Essentially, what I'm asking is if we can have multiple open identifiers at any given time.
+Since markings might variously give rise to valid or invalid selections, we'd probably like
+    to track them all, only discarding the invalid ones,
+    then working out what to do when there's a subsumption or overlap.
+
+line 1: ____(AAA
+line 2: AAA)____
+line 3: ____(BBB
+line 4: BBB)____
+
+line 1: ____(AAA
+line 3: ____(BBB
+line 2: AAA)____
+line 4: BBB)____
+
+My thought is:
+    have a stack of mark id + text accumulator
+    as you find open identifiers, push an empty record onto the stack
+    when you find text, put it into the top record
+        but if you the stack is empty, it is unselected
+    when you find a close mark, there are two algorithmic options:
+        a) the stack above the matching mark is selected,
+            the rest is not, so drain the stack
+            when you reach end-of-file, all the text on the stack is unselected
+        b) the stack above may be selected,
+            record it as an option and store back on the stack
+            as bits of stack are found invalid, pop them and merge records downwards
+            when a possible selection reaches the bottom, it's confirmed to be a selection
+
+I think I might need to go with (b), b/c then a tiny cursor won't erase a large selection?
+I can probably do it if I use a seqience of line slices, but I need to consider linebreaks.
+
+
+Actually, we will know exactly what number of selections will be coming at any given point.
+The open/close marks are paired when created, and their count (though not order) is preserved.
+So, if we've already seen a close mark for an id, then it's open mark is known invalid w/o consuming more input.
+Similarly, if we've seen only an open mark, then we know the corresponding close will be coming.
+
+So, if we see an open that has not been previously closed, we begin accumulating a selection from that mark.
+    This will prefer earlier selections when they overlap, an larger selections when subsumed.
+I think the only thing I have to look out for is when selections start at the same location.
+Alternately, I could keep track of all the open marks, and only close when all have closed.
+    This will merge selections together when they overlap, which might be more symmetric.

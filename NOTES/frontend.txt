@@ -1,0 +1,12 @@
+[Terminal text input is fundamentally broken](https://github.com/jtdaugherty/vty/issues/45)
+
+Crtl+i is indistinguishable from tab, Ctrl+[ is indistinguishable from escape,
+and modifiers get dropped all over the place.
+
+The way I see it, I have two options:
+
+    1) Make keybindings on the terminal that avoid the rough spots.
+    2) Find a GUI library that can handle the keyboard correctly, but also put characters into a grid.
+
+I think for now, i'll go with #1.
+I don't know a good UI library for what I need, but Vi seems to manage just fine despite the terminal' input model.

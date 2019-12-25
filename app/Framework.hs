@@ -43,7 +43,14 @@ startupSize f = do
     Just size <- TermSize.size
     pure $ f size
 
+testingUpdate :: (Event -> st -> st) -> Update st
+testingUpdate handler = filterQuit isEsc $ \ev st -> pure $ handler ev st
+
 filterQuit :: (Event -> Bool) -> (Event -> st -> IO st) -> Update st
 filterQuit p upd ev st
     | p ev = pure Nothing
     | otherwise = Just <$> upd ev st
+
+isEsc :: Event -> Bool
+isEsc (EvKey (KEsc) _) = True
+isEsc _ = False

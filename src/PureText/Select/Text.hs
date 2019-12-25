@@ -9,7 +9,7 @@ import Util.DerivingVia.Newtypesque
 import PureText.Select.Base
 
 
--- newtype Textish = T { unT :: Seq (Marked Text) } -- TODO
+-- newtype Textish = T { unT :: Seq (MarkOr Text) } -- TODO
 newtype Textish = T { unT :: Text }
     deriving
         ( Eq, Ord
@@ -19,11 +19,24 @@ newtype Textish = T { unT :: Text }
     deriving Show via (Newtypesque Textish)
     -- deriving Read via (Holding Textish)
     deriving IsString via (Newtypesque Textish)
+
+
+
+
+
+
+
+
+-- TODO these need to be altered once Textish is a Marked Text
+{- The nice thing is, the compiler will tell me about it -}
 instance IsNewtypesque Textish Text where
     injNewtype = T
     prjNewtype = unT
-
-
+deriving via (Newtypesque Textish) instance ListCore (AsChars Textish)
+deriving via (Newtypesque Textish) instance SeqCore (AsChars Textish)
+deriving via (Newtypesque Textish) instance Foldable (AsChars Textish)
+deriving via (Newtypesque Textish) instance ListLike (AsChars Textish)
+deriving via (Newtypesque Textish) instance SeqLike (AsChars Textish)
 
 
 -- instance ListLike (AsChars Textish) where

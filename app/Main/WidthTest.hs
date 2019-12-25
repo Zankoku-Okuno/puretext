@@ -10,7 +10,7 @@ import Graphics.Vty
 
 
 app :: App St
-app = (pure st0, filterQuit isQuit updDebug, draw)
+app = (pure st0, testingUpdate updDebug, draw)
 
 
 data St = St
@@ -22,22 +22,18 @@ data St = St
 st0 :: St
 st0 = (St "He水ll水o, 水wo水rl水d! 水i水zu水" "" Nothing)
 
-updDebug ev st = do
-    st' <- upd ev st
-    pure st'{evLine = Just ev}
+updDebug ev st = (upd ev st){evLine = Just ev}
 
-upd ev@(EvMouseUp col 0 (Just BLeft)) st@St{partB = ""} = pure $
+upd ev@(EvMouseUp col 0 (Just BLeft)) st@St{partB = ""} =
     -- let (a', b') = splitAt col $ partA st
     let (a', b') = wcSplitAt col $ partA st
     in st{partA = a', partB = b'}
-upd (EvKey KEnter _) st@(St{partA, partB}) = pure $ st{partA = partA <> partB, partB = ""}
-upd ev st = pure st
+upd (EvKey KEnter _) st@(St{partA, partB}) = st{partA = partA <> partB, partB = ""}
+upd ev st = st
 
 draw (St a b ev) = picForImage $ vertCat $ text' defAttr <$> [a, b, maybe "" (T.pack . show) ev]
 
 
-isQuit (EvKey (KEsc) _) = True
-isQuit _ = False
 
 
 

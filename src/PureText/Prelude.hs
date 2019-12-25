@@ -26,6 +26,7 @@ import Data.Either as X
 -- import Data.Foldable as X hiding (null, length)
 import PureText.ListLike as X
 import Data.Sequence as X (Seq)
+import Data.Map as X (Map)
 
 import Data.Function as X
 import Data.Semigroup as X hiding (First(..), Last(..))
