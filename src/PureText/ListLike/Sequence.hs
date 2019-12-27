@@ -62,7 +62,7 @@ instance ListLike (Seq a) where
         where (prefix, suffix) = splitAt (length needle) haystack
     tails = toList . Seq.tails
 instance SeqLike (Seq a) where
-    splitAtEnd n xs = Seq.splitAt (Seq.length xs - n) xs
+    splitAtEnd n xs = Seq.splitAt (Seq.length xs - (fromIntegral n)) xs
     spanEnd p = swap . Seq.spanr p
     takeWhileEnd p = Seq.takeWhileR p
     dropWhileEnd p = Seq.dropWhileR p

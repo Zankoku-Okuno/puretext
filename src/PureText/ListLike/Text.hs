@@ -50,7 +50,7 @@ instance ListLike Text where
     -- stripInfix = seqlikeStripInfix
     -- isInfixOf = T.isInfixOf
 instance SeqLike Text where
-    splitAtEnd n xs = T.splitAt (length xs - n) xs
+    splitAtEnd n xs = T.splitAt (length xs - (fromIntegral n)) xs
     takeEnd = T.takeEnd
     dropEnd = T.dropEnd
     spanEnd p xs = (dropWhileEnd p xs, takeWhileEnd p xs)

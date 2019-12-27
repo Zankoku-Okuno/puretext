@@ -207,7 +207,7 @@ class (ListCore f, Foldable f) => ListLike f where
     {-# MINIMAL (splitAt | (take, drop)), (span | (takeWhile, dropWhile)) #-}
 
     -- length-based operations
-    length :: Num n => f -> n
+    length :: (Integral n, Num n) => f -> n
     length = foldl' (\l _ -> l+1) 0
 
     splitAt :: Integral n => n -> f -> (f, f)
@@ -281,7 +281,7 @@ instance (ListLike f, SeqCore f) => ListLike (ASeqCore f) where
 
 class (ListLike f, SeqCore f) => SeqLike f where
     -- length-based operations
-    splitAtEnd :: Int -> f -> (f, f)
+    splitAtEnd :: Integral n => n -> f -> (f, f)
     splitAtEnd n0 = flip (go n0) Nil
         where
         go 0 xs !acc = (xs, acc)
